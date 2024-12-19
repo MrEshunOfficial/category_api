@@ -4,6 +4,21 @@ import { v4 as uuidv4 } from 'uuid';
 import * as XLSX from 'xlsx';
 import Category from '@/models/categoryModel';
 
+// Helper function to add CORS headers
+function corsResponse(response: NextResponse) {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  return response;
+}
+
+// Handle OPTIONS requests (CORS preflight)
+export async function OPTIONS(req: NextRequest) {
+  return corsResponse(
+    new NextResponse(null, { status: 200 })
+  );
+}
+
 export async function POST(req: NextRequest) {
   await connect();
 
@@ -17,7 +32,9 @@ export async function POST(req: NextRequest) {
       const file = formData.get('file') as File;
 
       if (!file) {
-        return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+        return corsResponse(
+          NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
+        );
       }
 
       const arrayBuffer = await file.arrayBuffer();
@@ -25,7 +42,7 @@ export async function POST(req: NextRequest) {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
 
-      // Process and save categories (similar to your existing POST_IMPORT logic)
+      // Process and save categories
       const importedCategories = [];
       const categoryMap = new Map<string, any>();
 
@@ -57,7 +74,9 @@ export async function POST(req: NextRequest) {
       // Save all categories
       await Category.insertMany(importedCategories);
 
-      return NextResponse.json(importedCategories, { status: 201 });
+      return corsResponse(
+        NextResponse.json(importedCategories, { status: 201 })
+      );
     }
 
     // Handle JSON category creation
@@ -66,34 +85,46 @@ export async function POST(req: NextRequest) {
       body = await req.json();
     } catch (parseError) {
       console.error('JSON Parsing Error:', parseError);
-      return NextResponse.json({ 
-        error: 'Invalid JSON',
-        details: parseError instanceof Error ? parseError.message : 'Unable to parse request body'
-      }, { status: 400 });
+      return corsResponse(
+        NextResponse.json({ 
+          error: 'Invalid JSON',
+          details: parseError instanceof Error ? parseError.message : 'Unable to parse request body'
+        }, { status: 400 })
+      );
     }
 
     // Validate required fields
     if (!body.name) {
-      return NextResponse.json({ 
-        error: 'Category name is required' 
-      }, { status: 400 });
+      return corsResponse(
+        NextResponse.json({ 
+          error: 'Category name is required' 
+        }, { status: 400 })
+      );
     }
 
-    // Create a new category
+    // Create a new category with optional subcategories
     const newCategory = new Category({
       id: uuidv4(),
       name: body.name,
-      subcategories: body.subcategories || []
+      subcategories: Array.isArray(body.subcategories) ? body.subcategories.map((sub: any) => ({
+        id: uuidv4(),
+        name: sub.name
+      })) : []
     });
 
     await newCategory.save();
-    return NextResponse.json(newCategory, { status: 201 });
+    return corsResponse(
+      NextResponse.json(newCategory, { status: 201 })
+    );
+
   } catch (error) {
     console.error('Category creation error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to create category',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return corsResponse(
+      NextResponse.json({ 
+        error: 'Failed to create category',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, { status: 500 })
+    );
   }
 }
 
@@ -101,14 +132,18 @@ export async function GET() {
   await connect();
 
   try {
-    const categories = await Category.find();
-    return NextResponse.json(categories);
+    const categories = await Category.find().sort({ createdAt: -1 });
+    return corsResponse(
+      NextResponse.json(categories)
+    );
   } catch (error) {
     console.error('Fetch categories error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch categories',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return corsResponse(
+      NextResponse.json({ 
+        error: 'Failed to fetch categories',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, { status: 500 })
+    );
   }
 }
 
@@ -116,32 +151,47 @@ export async function PUT(req: NextRequest) {
   await connect();
 
   try {
-    // Parse the request body only once
     const body = await req.json();
     const { categoryId, ...updateData } = body;
 
-    // Validate inputs
+    // Input validation
     if (!categoryId) {
-      return NextResponse.json({ error: 'Category ID is required' }, { status: 400 });
+      return corsResponse(
+        NextResponse.json({ error: 'Category ID is required' }, { status: 400 })
+      );
+    }
+
+    // Ensure subcategories have IDs if present
+    if (updateData.subcategories) {
+      updateData.subcategories = updateData.subcategories.map((sub: any) => ({
+        ...sub,
+        id: sub.id || uuidv4()
+      }));
     }
 
     const updatedCategory = await Category.findOneAndUpdate(
       { id: categoryId },
       updateData,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!updatedCategory) {
-      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+      return corsResponse(
+        NextResponse.json({ error: 'Category not found' }, { status: 404 })
+      );
     }
 
-    return NextResponse.json(updatedCategory);
+    return corsResponse(
+      NextResponse.json(updatedCategory)
+    );
   } catch (error) {
     console.error('Category update error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to update category',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return corsResponse(
+      NextResponse.json({ 
+        error: 'Failed to update category',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, { status: 500 })
+    );
   }
 }
 
@@ -152,23 +202,34 @@ export async function DELETE(req: NextRequest) {
     const body = await req.json();
     const { categoryId } = body;
 
-    // Validate input
+    // Input validation
     if (!categoryId) {
-      return NextResponse.json({ error: 'Category ID is required' }, { status: 400 });
+      return corsResponse(
+        NextResponse.json({ error: 'Category ID is required' }, { status: 400 })
+      );
     }
 
     const deletedCategory = await Category.findOneAndDelete({ id: categoryId });
 
     if (!deletedCategory) {
-      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+      return corsResponse(
+        NextResponse.json({ error: 'Category not found' }, { status: 404 })
+      );
     }
 
-    return NextResponse.json({ message: 'Category deleted successfully' });
+    return corsResponse(
+      NextResponse.json({ 
+        message: 'Category deleted successfully',
+        deleted: deletedCategory
+      })
+    );
   } catch (error) {
     console.error('Category deletion error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to delete category',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return corsResponse(
+      NextResponse.json({ 
+        error: 'Failed to delete category',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, { status: 500 })
+    );
   }
 }
