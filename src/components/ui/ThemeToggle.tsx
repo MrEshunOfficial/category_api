@@ -1,10 +1,6 @@
 "use client";
-import React, {  } from "react";
-import {
-  Sun,
-  Moon,
-  Laptop,
-} from "lucide-react";
+import React from "react";
+import { Sun, Moon, Laptop } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -12,10 +8,11 @@ import {
 } from "@/components/ui/popover";
 
 import { Button } from "./button";
+import { useTheme } from "next-themes";
 
-export const ThemeToggleButton: React.FC<{
-  setTheme: (theme: string) => void;
-}> = ({ setTheme }) => (
+export const ThemeToggleButton = () => {
+  const { theme, setTheme } = useTheme();
+
   <Popover>
     <PopoverTrigger asChild>
       <Button
@@ -53,5 +50,5 @@ export const ThemeToggleButton: React.FC<{
         <span>System</span>
       </Button>
     </PopoverContent>
-  </Popover>
-);
+  </Popover>;
+};
