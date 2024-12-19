@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SessionProvider } from "next-auth/react";
 import { ReduxProvider } from "@/components/ReduxProvider";
 
 const geistSans = localFont({
@@ -18,7 +17,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Harvest Bridge",
+  title: "product-category",
   description: "developed by PlanZen Inc.",
 };
 
@@ -28,24 +27,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SessionProvider>
-      <html lang="en">
-        <head />
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased flex items-center justify-center`}
-        >
-          <ReduxProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <main className="w-screen min-h-screen flex p-2">{children}</main>
-            </ThemeProvider>
-          </ReduxProvider>
-        </body>
-      </html>
-    </SessionProvider>
+    <html lang="en">
+      <head />
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex items-center justify-center`}
+      >
+        <ReduxProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <main className="w-screen min-h-screen flex p-2">{children}</main>
+          </ThemeProvider>
+        </ReduxProvider>
+      </body>
+    </html>
   );
 }
