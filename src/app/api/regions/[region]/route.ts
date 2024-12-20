@@ -28,6 +28,7 @@ export async function GET(
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
     });
+    
   } catch (error) {
     console.error('Error fetching region:', error);
     return new NextResponse(JSON.stringify({ error: 'Error fetching region data' }), {

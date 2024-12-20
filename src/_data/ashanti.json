@@ -1,6 +1,6 @@
-[{
-        "region" : "Ashanti" ,
-        "cities": [
+{
+    "region" : "Ashanti" ,
+    "cities": [
             "Abrepo Junction",
             "Abuakwa",
             "Adum",
@@ -69,6 +69,4 @@
             "Tepa",
             "TUC"
         ]
-    }
-
-]
+}
