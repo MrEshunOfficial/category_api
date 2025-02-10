@@ -204,7 +204,7 @@ const CategoryManagement: React.FC = () => {
   // Error handling
   if (error) {
     return (
-      <div className="p-4 bg-red-50 text-red-600">
+      <div className="p-4 bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-300">
         An error occurred: {error}
       </div>
     );
@@ -212,7 +212,7 @@ const CategoryManagement: React.FC = () => {
 
   return (
     <div className="container flex justify-center items-center p-3">
-      <Card className="w-full max-w-2xl shadow-lg border-0 rounded-xl">
+      <Card className="w-full max-w-2xl shadow-lg border-0 rounded-xl dark:bg-gray-800">
         <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-xl">
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold">
@@ -228,10 +228,10 @@ const CategoryManagement: React.FC = () => {
 
         <CardContent className="p-6 space-y-6">
           {/* File Upload Section */}
-          <div className="bg-white shadow-md rounded-xl border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-700 shadow-md rounded-xl border border-gray-200 dark:border-gray-600 p-6">
             <div
-              className="relative w-full border-2 border-dashed border-blue-200 rounded-lg p-6 text-center 
-              hover:border-blue-400 transition-all group cursor-pointer"
+              className="relative w-full border-2 border-dashed border-blue-200 dark:border-blue-500 rounded-lg p-6 text-center 
+              hover:border-blue-400 dark:hover:border-blue-600 transition-all group cursor-pointer"
               onDragOver={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -255,15 +255,15 @@ const CategoryManagement: React.FC = () => {
                 ref={fileInputRef}
               />
               <div className="flex flex-col items-center justify-center space-y-4">
-                <Upload className="w-12 h-12 text-blue-500 group-hover:scale-110 transition-transform" />
-                <div className="text-gray-600 group-hover:text-blue-600">
+                <Upload className="w-12 h-12 text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                <div className="text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                   <p className="font-semibold text-lg">
                     Drag and Drop Spreadsheet
                   </p>
                   <p className="text-sm">
                     or{" "}
                     <span
-                      className="text-blue-600 underline cursor-pointer"
+                      className="text-blue-600 dark:text-blue-400 underline cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       Browse Files
@@ -275,7 +275,7 @@ const CategoryManagement: React.FC = () => {
           </div>
 
           {/* Add New Category Section */}
-          <div className="bg-white shadow-sm rounded-lg p-4 border border-gray-200 flex space-x-4">
+          <div className="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-4 border border-gray-200 dark:border-gray-600 flex space-x-4">
             <Input
               type="text"
               placeholder="Enter new category name"
@@ -297,14 +297,14 @@ const CategoryManagement: React.FC = () => {
           </div>
 
           {/* Categories ScrollArea */}
-          <ScrollArea className="h-[500px] w-full rounded-lg border border-gray-200 bg-white shadow-inner p-2 overflow-y-auto">
+          <ScrollArea className="h-[500px] w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-inner p-2 overflow-y-auto">
             {categories.map((category) => (
               <div
                 key={category.id}
-                className="bg-gray-50 border border-gray-200 rounded-lg p-4 my-2 transition-all hover:shadow-sm"
+                className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 my-2 transition-all hover:shadow-sm"
               >
                 {/* Category Header */}
-                <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200">
+                <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200 dark:border-gray-600">
                   {editingCategoryId === category.id ? (
                     <div className="flex space-x-2 w-full">
                       <Input
@@ -337,7 +337,7 @@ const CategoryManagement: React.FC = () => {
                     </div>
                   ) : (
                     <>
-                      <h3 className="text-lg font-semibold text-gray-800 flex-grow">
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-300 flex-grow">
                         {category.name}
                       </h3>
                       <div className="flex space-x-2">
@@ -345,7 +345,7 @@ const CategoryManagement: React.FC = () => {
                           onClick={() => startEditingCategory(category)}
                           variant="ghost"
                           size="sm"
-                          className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                          className="text-blue-600 border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-600"
                         >
                           <Edit size={18} />
                         </Button>
@@ -393,9 +393,11 @@ const CategoryManagement: React.FC = () => {
                   {category.subcategories.map((subcategory) => (
                     <div
                       key={subcategory.id}
-                      className="flex justify-between items-center bg-white p-2 rounded border border-gray-200 shadow-sm"
+                      className="flex justify-between items-center bg-white dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 shadow-sm"
                     >
-                      <span className="text-gray-700">{subcategory.name}</span>
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {subcategory.name}
+                      </span>
                       <Button
                         onClick={() =>
                           removeSubcategory(category.id, subcategory.id)
